@@ -1,2 +1,8 @@
-F.merge('/css/default.css', '/css/bootstrap.min.css', '/css/ui.css', '/css/default.css');
-F.merge('/js/default.js', '/js/jctajr.min.js', '/js/ui.js', '/js/default.js');
+// Merging static files
+// Only CSS and JavaScript
+
+// CSS
+F.merge('/css/manager.css', '/css/bootstrap.min.css', '/css/ui.css#manager', '/css/manager.css');
+
+// JavaScript
+F.merge('/js/manager.js', '/js/jctajr.min.js', '/js/ui.js#manager', '/js/manager.js');

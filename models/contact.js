@@ -1,37 +1,28 @@
 NEWSCHEMA('Contact').make(function(schema) {
 
-	schema.define('firstname', 'Capitalize(40)', true);
-	schema.define('lastname', 'Capitalize(40)', true);
+	schema.define('id', 'String(20)');
+	schema.define('firstname', 'Camelize(40)', true);
+	schema.define('lastname', 'Camelize(40)', true);
 	schema.define('email', 'Email', true);
-	schema.define('message', String, true);
+	schema.define('body', String, true);
 	schema.define('phone', 'Phone');
-	schema.define('ip', 'String(80)');
+	schema.define('language', 'Lower(2)');
 
 	// Saves the model into the database
-	schema.setSave(function(error, model, options, callback) {
+	schema.setSave(function(error, model, options, callback, controller) {
 
 		model.id = UID();
-		model.datecreated = new Date();
+		model.datecreated = F.datetime;
+		controller && (model.ip = controller.ip);
 
-		// Saves to database
 		NOSQL('contactforms').insert(model.$clean());
-
-		// Returns response
+		MODULE('webcounter').increment('contactforms');
 		callback(SUCCESS(true));
 
-		var builder = [];
-
-		builder.push('<b>Created:</b><br />' + new Date().format('yyyy-MM-dd HH:mm:ss'))
-		builder.push('<b>IP address:</b><br />' + model.ip);
-		builder.push('<b>Name:</b><br />' + model.firstname + ' ' + model.lastname);
-		builder.push('<b>Email address:</b><br />' + model.email);
-
-		if (model.phone)
-			builder.push('<b>Phone number:</b><br />' + model.phone);
-
-		builder.push('<b>Question:</b><br />' + model.body);
+		F.emit('contact.save', model);
 
 		// Sends email
-		F.logmail(CONFIG('mail.contact'), 'Contact form # ' + model.id, builder.join('\n\n')).reply(model.email);
+		var mail = F.mail(F.config.custom.emailcontactform, '@(Contact form #) ' + model.id, '=?/mails/contact', model, model.language || '');
+		mail.reply(model.email, true);
 	});
 });
